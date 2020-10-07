@@ -1,4 +1,4 @@
-import React, {Component, ReactNode} from 'react';
+import React, { Component, ReactNode } from 'react';
 import Tile from "./Tile";
 
 
@@ -8,7 +8,8 @@ import Tile from "./Tile";
  */
 interface Props {
   playing: boolean,
-  onPlayerChange: (name: string) => void,
+  onMessageChange: (message: string) => void,
+  onPlayingChange: (playing: boolean) => void,
 }
 
 /**
@@ -33,6 +34,11 @@ const defaultBoard = [
   -1, -1, -1, -1, -1, -1,
   -1, -1, -1, -1, -1, -1,
 ];
+const defaultPlayers = ["Red", "Yellow"];
+const defaultCurrentPlayer = 0;
+const defaultPlaying = false;
+const defaultLastSelectedTile = -1;
+const defaultShowAll = false;
 
 
 
@@ -41,47 +47,91 @@ const defaultBoard = [
  * @author Ingo Andelhofs
  */
 class Board extends Component<Props, State> {
+  // State
   public state: State = {
-    board: defaultBoard,
-    players: ["A", "B"],
-    currentPlayer: 0,
-    playing: false,
-    lastSelectedTile: -1,
-    showAll: false,
+    board: [...defaultBoard],
+    players: [...defaultPlayers],
+    currentPlayer: defaultCurrentPlayer,
+    playing: defaultPlaying,
+    lastSelectedTile: defaultLastSelectedTile,
+    showAll: defaultShowAll,
+  }
+
+  public setPlaying = (playing: boolean) => {
+    if (playing === this.state.playing)
+      return;
+
+    this.setState(
+      () => ({ playing }),
+      () => this.props.onPlayingChange(playing)
+    );
+  }
+
+  public setCurrentPlayer = (player: number, callback?: () => void) => {
+    if (player === this.state.currentPlayer) {
+      if (callback)
+        callback();
+      return;
+    }
+
+    this.setState(() => ({ currentPlayer: player }), callback);
+  }
+
+  public setBoard = (board: number[], callback?: () => void) => {
+    if (board === this.state.board) {
+      if (callback)
+        callback();
+      return;
+    }
+
+    this.setState(() => ({ board }), callback);
+  }
+
+  public setLastSelectedTile = (index: number) => {
+    this.setState(() => ({ lastSelectedTile: index }));
   }
 
 
+  // Methods
   private selectTile = (index: number) => {
-    if (!this.state.playing)
+    const { playing, board } = this.state;
+
+    if (!playing) {
+      this.props.onMessageChange(`You must first start playing before you select a Tile.`);
       return;
+    }
 
     if (this.check4InARow(index)) {
-      const playerThatWon = this.state.currentPlayer;
-      alert("You won!");
-      alert(`Player ${this.state.players[playerThatWon]} wins!`);
-      this.showAllTiles();
-    }
-
-    const selectedTile = this.state.board[index];
-
-    if (selectedTile !== -1) {
-      const playerThatWon = (this.state.currentPlayer + 1) % 2;
-      alert("The selected tile was already selected!");
-      alert(`Player ${this.state.players[playerThatWon]} wins!`);
-
-      this.setState(() => ({ playing: false }));
+      this.props.onMessageChange(`You won! Player ${this.getCurrentPlayerName()} wins!`);
+      this.setPlaying(false);
+      this.updateBoardAtIndex(index);
       this.showAllTiles();
       return;
     }
 
-    this.setState(() => ({lastSelectedTile: index}))
+    const selectedTile = board[index];
+    if (selectedTile !== -1) {
+      this.props.onMessageChange(`
+        The other player won! 
+        The selected tile was already selected! 
+        Player ${this.getNextPlayerName()} wins!`
+      );
 
-    this.updateBoard(this.state.currentPlayer, index);
-    this.updatePlayer();
+      this.setPlaying(false);
+      this.showAllTiles();
+      return;
+    }
+
+    this.setLastSelectedTile(index);
+    this.updateBoardAtIndex(index);
+    this.setCurrentPlayer(
+      this.getNextPlayer(), 
+      this.playerMessage,
+    )
   }
 
   private showAllTiles() {
-    this.setState(() => ({showAll: true}));
+    this.setState(() => ({ showAll: true }));
   }
 
   private check4InARow(lastMove: number): boolean {
@@ -101,9 +151,9 @@ class Board extends Component<Props, State> {
     for (let row = 0; row < 6 - 3; ++row) {
       for (let col = 0; col < 6; ++col) {
         if (getPlayerOnBoard(row, col) === currentPlayer &&
-            getPlayerOnBoard(row, col + 1) === currentPlayer &&
-            getPlayerOnBoard(row, col + 2) === currentPlayer &&
-            getPlayerOnBoard(row, col + 3) === currentPlayer) {
+          getPlayerOnBoard(row, col + 1) === currentPlayer &&
+          getPlayerOnBoard(row, col + 2) === currentPlayer &&
+          getPlayerOnBoard(row, col + 3) === currentPlayer) {
           return true;
         }
       }
@@ -112,9 +162,9 @@ class Board extends Component<Props, State> {
     for (let row = 0; row < 6; ++row) {
       for (let col = 0; col < 6 - 3; ++col) {
         if (getPlayerOnBoard(row, col) === currentPlayer &&
-            getPlayerOnBoard(row + 1, col) === currentPlayer &&
-            getPlayerOnBoard(row + 2, col) === currentPlayer &&
-            getPlayerOnBoard(row + 3, col) === currentPlayer) {
+          getPlayerOnBoard(row + 1, col) === currentPlayer &&
+          getPlayerOnBoard(row + 2, col) === currentPlayer &&
+          getPlayerOnBoard(row + 3, col) === currentPlayer) {
           return true;
         }
       }
@@ -123,9 +173,9 @@ class Board extends Component<Props, State> {
     for (let row = 3; row < 6; ++row) {
       for (let col = 0; col < 6 - 3; ++col) {
         if (getPlayerOnBoard(row, col) === currentPlayer &&
-            getPlayerOnBoard(row - 1, col + 1) === currentPlayer &&
-            getPlayerOnBoard(row - 2, col + 2) === currentPlayer &&
-            getPlayerOnBoard(row - 3, col + 3) === currentPlayer) {
+          getPlayerOnBoard(row - 1, col + 1) === currentPlayer &&
+          getPlayerOnBoard(row - 2, col + 2) === currentPlayer &&
+          getPlayerOnBoard(row - 3, col + 3) === currentPlayer) {
           return true;
         }
       }
@@ -134,9 +184,9 @@ class Board extends Component<Props, State> {
     for (let row = 3; row < 6; ++row) {
       for (let col = 3; col < 6; ++col) {
         if (getPlayerOnBoard(row, col) === currentPlayer &&
-            getPlayerOnBoard(row - 1, col - 1) === currentPlayer &&
-            getPlayerOnBoard(row - 2, col - 2) === currentPlayer &&
-            getPlayerOnBoard(row - 3, col - 3) === currentPlayer) {
+          getPlayerOnBoard(row - 1, col - 1) === currentPlayer &&
+          getPlayerOnBoard(row - 2, col - 2) === currentPlayer &&
+          getPlayerOnBoard(row - 3, col - 3) === currentPlayer) {
           return true;
         }
       }
@@ -145,40 +195,76 @@ class Board extends Component<Props, State> {
     return false;
   }
 
-
   private reset() {
+    console.log("reset", this.state.playing);
+
+
     this.setState(() => ({
-      board: defaultBoard,
-      currentPlayer: 0,
-    }))
+      board: [...defaultBoard],
+      players: [...defaultPlayers],
+      currentPlayer: defaultCurrentPlayer,
+      lastSelectedTile: defaultLastSelectedTile,
+      showAll: defaultShowAll,
+    }));
   }
 
-  private updateBoard(player: number, index: number): void {
-    const {board} = this.state;
-    board[index] = player;
-    this.setState(() => ({ board }));
+  private updateBoardAtIndex = (index: number) => {
+    const { board, currentPlayer } = this.state;
+    board[index] = currentPlayer;
+    this.setBoard(board);
   }
 
-  private updatePlayer(): void {
-    this.setState(
-      (prevState) => ({ currentPlayer: (prevState.currentPlayer + 1) % 2 }),
-      () => this.props.onPlayerChange(this.state.players[this.state.currentPlayer]),
-    );
+  private getNextPlayer = () => {
+    const { currentPlayer, players } = this.state;
+    const amountOfPlayers = players.length;
+
+    return (currentPlayer + 1) % amountOfPlayers;
+  }
+
+  private getCurrentPlayerName = () => {
+    const { currentPlayer, players } = this.state;
+    return players[currentPlayer];
+  }
+
+  private getNextPlayerName = () => {
+    const nextPlayer = this.getNextPlayer();
+    const { players } = this.state;
+    return players[nextPlayer];
   }
 
 
+  // Messages
+  private welcomeMessage = () => {
+    const { players } = this.state;
+    this.props.onMessageChange(`Welcome players ${players.join(" and ")}! Player ${this.getCurrentPlayerName()} may start!`);
+  }
+
+  private playerMessage = () => {
+    this.props.onMessageChange(`It's player ${this.getCurrentPlayerName()}'s turn!`);
+  }
+
+
+
+  // Component lifecycles
   public componentDidMount() {
-    this.setState(() => ({ playing: this.props.playing }));
-    this.props.onPlayerChange(this.state.players[this.state.currentPlayer]);
+    this.setPlaying(this.props.playing);
+    this.props.onMessageChange(`Press play to start playing...`);
   }
 
   public componentDidUpdate(prevProps: Props, prevState: State) {
-    if (prevState.playing !== this.props.playing) {
-      this.setState(() => ({ playing: this.props.playing }));
-      this.props.onPlayerChange(this.state.players[this.state.currentPlayer]);
+    if (prevProps.playing !== this.props.playing) {
+      this.setPlaying(this.props.playing);
+
+      if (this.props.playing) {
+        this.reset();
+        this.welcomeMessage();
+      }
     }
   }
 
+
+
+  // Rendering
   private renderTiles(): ReactNode {
     return this.state.board.map((player, index: number) =>
       <Tile
