@@ -55,14 +55,17 @@ class Board extends Component<Props, State> {
     if (!this.state.playing)
       return;
 
-    // todo: Check 4 in a row
+    if (this.check4InARow(index)) {
+      const playerThatWon = this.state.currentPlayer;
+      alert("You won!");
+      alert(`Player ${this.state.players[playerThatWon]} wins!`);
+      this.showAllTiles();
+    }
 
-
-    // todo: check already set
     const selectedTile = this.state.board[index];
+
     if (selectedTile !== -1) {
       const playerThatWon = (this.state.currentPlayer + 1) % 2;
-
       alert("The selected tile was already selected!");
       alert(`Player ${this.state.players[playerThatWon]} wins!`);
 
@@ -79,6 +82,67 @@ class Board extends Component<Props, State> {
 
   private showAllTiles() {
     this.setState(() => ({showAll: true}));
+  }
+
+  private check4InARow(lastMove: number): boolean {
+    // Get current user
+    const { board, currentPlayer } = this.state;
+
+    const getIndexOnBoard = (row: number, col: number): number => {
+      return col * 6 + row;
+    }
+
+    const getPlayerOnBoard = (row: number, col: number): number => {
+      const index = getIndexOnBoard(row, col);
+
+      return index === lastMove ? currentPlayer : board[index];
+    }
+
+    for (let row = 0; row < 6 - 3; ++row) {
+      for (let col = 0; col < 6; ++col) {
+        if (getPlayerOnBoard(row, col) === currentPlayer &&
+            getPlayerOnBoard(row, col + 1) === currentPlayer &&
+            getPlayerOnBoard(row, col + 2) === currentPlayer &&
+            getPlayerOnBoard(row, col + 3) === currentPlayer) {
+          return true;
+        }
+      }
+    }
+
+    for (let row = 0; row < 6; ++row) {
+      for (let col = 0; col < 6 - 3; ++col) {
+        if (getPlayerOnBoard(row, col) === currentPlayer &&
+            getPlayerOnBoard(row + 1, col) === currentPlayer &&
+            getPlayerOnBoard(row + 2, col) === currentPlayer &&
+            getPlayerOnBoard(row + 3, col) === currentPlayer) {
+          return true;
+        }
+      }
+    }
+
+    for (let row = 3; row < 6; ++row) {
+      for (let col = 0; col < 6 - 3; ++col) {
+        if (getPlayerOnBoard(row, col) === currentPlayer &&
+            getPlayerOnBoard(row - 1, col + 1) === currentPlayer &&
+            getPlayerOnBoard(row - 2, col + 2) === currentPlayer &&
+            getPlayerOnBoard(row - 3, col + 3) === currentPlayer) {
+          return true;
+        }
+      }
+    }
+
+    for (let row = 3; row < 6; ++row) {
+      for (let col = 3; col < 6; ++col) {
+        if (getPlayerOnBoard(row, col) === currentPlayer &&
+            getPlayerOnBoard(row - 1, col - 1) === currentPlayer &&
+            getPlayerOnBoard(row - 2, col - 2) === currentPlayer &&
+            getPlayerOnBoard(row - 3, col - 3) === currentPlayer) {
+          return true;
+        }
+      }
+    }
+
+    return false;
   }
 
 
