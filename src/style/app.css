@@ -1,0 +1,83 @@
+:root {
+    --tile-size: 70px;
+    --tiles-per-row: 6;
+    --tile-gap: 10px;
+}
+
+
+
+.Header {
+    text-align: center;
+    margin: 64px 0 8px 0;
+}
+
+.SubHeader {
+    text-align: center;
+    margin: 0 0 32px 0;
+}
+
+.Container {
+    margin: 32px auto 0 auto;
+    width: calc(var(--tiles-per-row) * var(--tile-size) + (var(--tiles-per-row) - 1) * var(--tile-gap));
+
+    display: flex;
+    justify-content: center;
+}
+
+.Button {
+    opacity: .9;
+    background-color: dodgerblue;
+
+    border-radius: 10px;
+    border: none;
+    outline: none;
+
+    padding: 12px 24px;
+
+    color: #f1f1f1;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.Button:hover {
+    opacity: 1;
+}
+
+
+
+.Board {
+    margin: 0 auto;
+    width: calc(var(--tiles-per-row) * var(--tile-size) + (var(--tiles-per-row) - 1) * var(--tile-gap));
+
+    display: grid;
+    grid-template-columns: repeat(var(--tiles-per-row), 1fr);
+    grid-gap: var(--tile-gap);
+}
+
+.Tile {
+    width: var(--tile-size);
+    height: var(--tile-size);
+
+    border-radius: 10px;
+
+    background-color: #f3f3f3;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.Tile:hover {
+    background-color: #ececec;
+}
+
+
+.Tile[data-selected="true"][data-player="0"] {
+    background-color: orangered;
+    opacity: .5;
+}
+
+.Tile[data-selected="true"][data-player="1"] {
+    background-color: yellow;
+    opacity: .5;
+}
