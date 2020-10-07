@@ -2,6 +2,7 @@ import React, { Component, ReactNode } from 'react';
 import Tile from "./Tile";
 
 
+
 /**
  * interface Props
  * @author Ingo Andelhofs
