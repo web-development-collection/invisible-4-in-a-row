@@ -149,19 +149,9 @@ class Board extends Component<Props, State> {
       return index === lastMove ? currentPlayer : board[index];
     }
 
+    // Check row (vertical)
     for (let row = 0; row < 6 - 3; ++row) {
       for (let col = 0; col < 6; ++col) {
-        if (getPlayerOnBoard(row, col) === currentPlayer &&
-          getPlayerOnBoard(row, col + 1) === currentPlayer &&
-          getPlayerOnBoard(row, col + 2) === currentPlayer &&
-          getPlayerOnBoard(row, col + 3) === currentPlayer) {
-          return true;
-        }
-      }
-    }
-
-    for (let row = 0; row < 6; ++row) {
-      for (let col = 0; col < 6 - 3; ++col) {
         if (getPlayerOnBoard(row, col) === currentPlayer &&
           getPlayerOnBoard(row + 1, col) === currentPlayer &&
           getPlayerOnBoard(row + 2, col) === currentPlayer &&
@@ -171,6 +161,19 @@ class Board extends Component<Props, State> {
       }
     }
 
+    // Check col (horizontal)
+    for (let row = 0; row < 6; ++row) {
+      for (let col = 0; col < 6 - 3; ++col) {
+        if (getPlayerOnBoard(row, col) === currentPlayer &&
+          getPlayerOnBoard(row, col + 1) === currentPlayer &&
+          getPlayerOnBoard(row, col + 2) === currentPlayer &&
+          getPlayerOnBoard(row, col + 3) === currentPlayer) {
+          return true;
+        }
+      }
+    }
+
+    // Check diagnal (bottom to top)
     for (let row = 3; row < 6; ++row) {
       for (let col = 0; col < 6 - 3; ++col) {
         if (getPlayerOnBoard(row, col) === currentPlayer &&
@@ -182,6 +185,7 @@ class Board extends Component<Props, State> {
       }
     }
 
+    // Check diagnal (top to bottom)
     for (let row = 3; row < 6; ++row) {
       for (let col = 3; col < 6; ++col) {
         if (getPlayerOnBoard(row, col) === currentPlayer &&
